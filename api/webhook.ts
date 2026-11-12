@@ -226,27 +226,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(200).json({ ok: true });
       }
 
-      // Display Quality Selection Keyboard
+      // Display Expanded Quality Selection Keyboard (Video from 4K to 144p, Audio from FLAC to 24k, plus Original)
       const inlineKeyboard = [
         [
-          { text: "🎬 Best Video (1080p+)", callback_data: "q:1080p" },
-          { text: "📺 Standard (720p)", callback_data: "q:720p" },
+          { text: "🌟 4K/2K", callback_data: "q:4k" },
+          { text: "🎬 1080p FHD", callback_data: "q:1080p" },
+          { text: "📺 720p HD", callback_data: "q:720p" },
         ],
         [
-          { text: "📱 Mobile (480p)", callback_data: "q:480p" },
-          { text: "🎵 Audio (MP3 320k)", callback_data: "q:mp3" },
+          { text: "📱 480p SD", callback_data: "q:480p" },
+          { text: "⚡ 360p Low", callback_data: "q:360p" },
+          { text: "💾 144p Tiny", callback_data: "q:144p" },
         ],
         [
-          {
-            text: "📦 Best Original (No Re-encode)",
-            callback_data: "q:original",
-          },
+          { text: "🎼 FLAC (Lossless)", callback_data: "q:flac" },
+          { text: "🎵 MP3 320k (Max)", callback_data: "q:mp3_320" },
+          { text: "🎶 MP3 128k (Normal)", callback_data: "q:mp3_128" },
+        ],
+        [
+          { text: "🎙️ MP3 48k (Low)", callback_data: "q:mp3_48" },
+          { text: "📻 MP3 24k (Ultra Low)", callback_data: "q:mp3_24" },
+          { text: "📦 Best Original", callback_data: "q:original" },
         ],
       ];
 
       await callTelegram("sendMessage", {
         chat_id: chatId,
-        text: `📥 *Media Link Detected:*\n${foundUrl}\n\nSelect your desired format/quality:`,
+        text: `📥 *Media Link Detected:*\n${foundUrl}\n\nSelect your desired format/quality (Video, Audio, or Direct File):`,
         parse_mode: "Markdown",
         reply_markup: {
           inline_keyboard: inlineKeyboard,
