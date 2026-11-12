@@ -85,6 +85,7 @@ def build_ydl_opts(quality: str, progress_hook) -> dict:
         "progress_hooks": [progress_hook],
         "quiet": False,
         "no_warnings": False,
+        "nocheckcertificate": True,
         "remote_components": ["ejs:github"],
         "extractor_args": {
             "youtube": {
@@ -282,8 +283,17 @@ def direct_stream_download(url: str) -> Path:
 
     update_telegram_status(f"⬇️ *Connecting to Direct Media Link...*\n\n`{clean_name}`")
 
+    import urllib3
+
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
     with requests.get(
-        url, headers=headers, stream=True, timeout=60, allow_redirects=True
+        url,
+        headers=headers,
+        stream=True,
+        timeout=60,
+        allow_redirects=True,
+        verify=False,
     ) as r:
         r.raise_for_status()
         total_size = int(r.headers.get("content-length", 0))
@@ -622,10 +632,24 @@ async def main():
     )
 
     # Step 3: Upload to Telegram
+    file_size_mb = media_file.stat().st_size / (1024 * 1024)
     try:
         if API_ID and API_HASH:
-            print("Using Pyrogram MTProto Client for direct 2GB upload...")
-            await upload_via_pyrogram(media_file, media_title, is_audio)
+            print("Attempting upload via Pyrogram MTProto Client...")
+            try:
+                await upload_via_pyrogram(media_file, media_title, is_audio)
+            except Exception as mtproto_err:
+                print(f"[WARN] Pyrogram MTProto failed: {mtproto_err}")
+                if file_size_mb <= 49.5:
+                    print(
+                        f"File size ({file_size_mb:.1f} MB) is <= 50MB. Falling back to Telegram Bot HTTP API..."
+                    )
+                    update_telegram_status(
+                        "⬆️ *Uploading to Telegram (HTTP Bot API fallback)...*"
+                    )
+                    upload_via_bot_api(media_file, media_title, is_audio)
+                else:
+                    raise mtproto_err
         else:
             print(
                 "No MTProto credentials found. Falling back to Telegram Bot API (50MB limit)..."
