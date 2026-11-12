@@ -81,7 +81,20 @@ def build_ydl_opts(quality: str, progress_hook) -> dict:
         "progress_hooks": [progress_hook],
         "quiet": False,
         "no_warnings": False,
+        "remote_components": ["ejs:github"],
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["tv_samsung", "visionos", "android"],
+            }
+        },
     }
+
+    # Optional Cookies support if user sets YOUTUBE_COOKIES secret
+    cookies_content = os.environ.get("YOUTUBE_COOKIES", "").strip()
+    if cookies_content:
+        cookies_file = Path("cookies.txt")
+        cookies_file.write_text(cookies_content)
+        opts["cookiefile"] = str(cookies_file)
 
     if quality == "mp3":
         opts.update(
