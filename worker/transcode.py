@@ -92,6 +92,14 @@ def build_ydl_opts(quality: str, progress_hook) -> dict:
     # Optional Cookies support if user sets YOUTUBE_COOKIES secret
     cookies_content = os.environ.get("YOUTUBE_COOKIES", "").strip()
     if cookies_content:
+        import base64
+
+        try:
+            decoded = base64.b64decode(cookies_content).decode("utf-8")
+            if "# Netscape" in decoded or "\t" in decoded:
+                cookies_content = decoded
+        except Exception:
+            pass
         cookies_file = Path("cookies.txt")
         cookies_file.write_text(cookies_content)
         opts["cookiefile"] = str(cookies_file)
@@ -320,7 +328,16 @@ async def main():
             if meta:
                 media_title = meta.get("title", media_title)
     except Exception as e:
-        err_msg = f"❌ *Download Failed:*\n`{str(e)}`"
+        err_str = str(e)
+        if "confirm you’re not a bot" in err_str or "Sign in to confirm" in err_str:
+            err_msg = (
+                "⚠️ *تنبيه حماية يوتيوب:*\n\n"
+                "سيرفرات GitHub تقع ضمن مراكز بيانات مايكروسوفت (Datacenter IPs)، ويوتيوب يطلب تسجيل الدخول للتأكد من أنك لست روبوتاً.\n\n"
+                "💡 *الحل:* أضف كوكيز حسابك في يوتيوب كـ Secret في GitHub باسم `YOUTUBE_COOKIES` لتجاوز هذا التحقق نهائياً.\n\n"
+                "*(ملاحظة: باقي المواقع مثل تيك توك، تويتر/X، إنستغرام والروابط المباشرة تعمل فوراً بدون كوكيز)*"
+            )
+        else:
+            err_msg = f"❌ *Download Failed:*\n`{err_str}`"
         update_telegram_status(err_msg)
         print(f"[ERROR] yt-dlp failed: {e}")
         sys.exit(1)
