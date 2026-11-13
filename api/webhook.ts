@@ -156,8 +156,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         await callTelegram("editMessageText", {
           chat_id: chatId,
           message_id: messageId,
-          text: `🚀 *Queued for Processing!*\n\n🔗 *Link:* ${targetUrl}\n🎯 *Format:* \`${quality.toUpperCase()}\`\n\n⚙️ *Spawning GitHub Actions Runner...*`,
-          parse_mode: "Markdown",
+          text: `🚀 Queued for Processing!\n\n🔗 Link: ${targetUrl}\n🎯 Format: ${quality.toUpperCase()}\n\n⚙️ Spawning GitHub Actions Runner...`,
         });
 
         try {
@@ -172,8 +171,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           await callTelegram("editMessageText", {
             chat_id: chatId,
             message_id: messageId,
-            text: `⏳ *Job Dispatched to GitHub Actions!*\n\n🔗 *Link:* ${targetUrl}\n🎯 *Format:* \`${quality.toUpperCase()}\`\n\nWorker is starting up to download, convert, and upload directly back here.`,
-            parse_mode: "Markdown",
+            text: `⏳ Job Dispatched to GitHub Actions!\n\n🔗 Link: ${targetUrl}\n🎯 Format: ${quality.toUpperCase()}\n\nWorker is starting up to download, convert, and upload directly back here.`,
           });
         } catch (err: unknown) {
           const errorMessage = err instanceof Error ? err.message : String(err);
@@ -252,8 +250,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       await callTelegram("sendMessage", {
         chat_id: chatId,
-        text: `📥 *Media Link Detected:*\n${foundUrl}\n\nSelect your desired format/quality (Video, Audio, or Direct File):`,
-        parse_mode: "Markdown",
+        text: `📥 Media Link Detected:\n${foundUrl}\n\nSelect your desired format/quality (Video, Audio, or Direct File):`,
         reply_markup: {
           inline_keyboard: inlineKeyboard,
         },

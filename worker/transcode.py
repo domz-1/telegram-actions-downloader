@@ -554,7 +554,6 @@ async def main():
     print(f"Starting job for URL: {TARGET_URL} (Quality: {QUALITY})")
     update_telegram_status(
         f"⚙️ *GitHub Actions Runner Started*\n\n"
-        f"Target URL: {TARGET_URL}\n"
         f"Requested Format: `{QUALITY.upper()}`\n"
         f"Analyzing link and downloading..."
     )
