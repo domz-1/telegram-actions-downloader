@@ -1,0 +1,25 @@
+name: Webhook Keepalive
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Ensure Telegram webhook is set and Vercel is alive
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          WEBHOOK_URL: https://telegram-actions-downloader.vercel.app/api/webhook
+        run: |
+          curl -fsS "$WEBHOOK_URL" || true
+          CURRENT=$(curl -fsS "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo" | python3 -c 'import sys,json; print(json.load(sys.stdin)["result"].get("url",""))')
+          if [ "$CURRENT" != "$WEBHOOK_URL" ]; then
+            echo "Webhook was '$CURRENT' - restoring"
+            curl -fsS -F "url=$WEBHOOK_URL" "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook"
+          else
+            echo "Webhook OK"
+          fi
